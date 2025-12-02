@@ -1,0 +1,35 @@
+type Query {
+  hello: String
+}
+
+type Mutation {
+  login(input: LoginInput!): AuthToken!
+  signup(input: SignupInput!): AuthToken!
+}
+
+type Subscription {
+  messageSent: Message
+}
+
+type Message {
+  id: ID!
+  text: String!
+  from: String!
+  createdAt: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input SignupInput {
+  username: String!
+  password: String!
+  email: String!
+}
+
+type AuthToken {
+  accessToken: String!
+  refreshToken: String!
+}
