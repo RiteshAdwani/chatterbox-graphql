@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import { readFile } from 'node:fs/promises';
 import { resolvers } from './src/graphql/resolvers/index.ts';
-import { authMiddleware, handleLogin } from './src/auth.ts';
+import { authMiddleware } from './src/graphql/middlewares/authMiddleware.ts';
 import { WebSocketServer } from 'ws';
 import { createServer as createHttpServer } from 'node:http';
 import { makeExecutableSchema } from '@graphql-tools/schema';
@@ -20,23 +20,6 @@ const PORT = process.env['PORT'] || 9000;
 const app = express();
 app.use(cors(), express.json());
 
-app.post('/login', handleLogin);
-
-// function getHttpContext({ req }) {
-//   if (req.auth) {
-//     return { user: req.auth.sub };
-//   }
-//   return {};
-// }
-
-// function getWsContext({ connectionParams }) {
-//   const accessToken = connectionParams?.accessToken;
-//   if (accessToken) {
-//     const payload = decodeToken(accessToken);
-//     return { user: payload.sub };
-//   }
-//   return {};
-// }
 
 const typeDefs = await readFile('src/graphql/schema.graphql', 'utf8');
 const schema = makeExecutableSchema({ typeDefs, resolvers });
@@ -57,5 +40,6 @@ useWsServer({ schema, context: getWsContext }, wsServer);
 
 httpServer.listen({ port: PORT }, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`GraphQL endpoint: http://localhost:${PORT}/graphql`);
+  console.log(`GraphQL HTTP endpoint: http://localhost:${PORT}/graphql`);
+  console.log(`GraphQL WebSocket endpoint: ws://localhost:${PORT}/graphql`);
 });

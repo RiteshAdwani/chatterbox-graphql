@@ -1,13 +1,15 @@
-import { createUser, findUserByEmail } from '../db/users';
+import { dbCreateUser, dbFindUserByEmail } from '../db/users';
 import type { SignupInput } from '../types';
 import { generateTokens } from '../utils/generateTokens';
 import { hashPassword } from '../utils/password';
+import { errorMessages } from '../constants/messages.constants';
 
 export async function signup(input: SignupInput) {
   const { username, email, password } = input;
-  const existing = await findUserByEmail(email);
-  if (existing) throw new Error('User already exists');
+  const existing = await dbFindUserByEmail(email);
+  if (existing) throw new Error(errorMessages.userAlreadyExists);
   const hashed = await hashPassword(password);
-  await createUser({ username, email, password: hashed });
-  return generateTokens({ username, email });
+  const userId = await dbCreateUser({ username, email, password: hashed });
+  if (!userId) throw new Error(errorMessages.failedToCreateUser);
+  return generateTokens({ id: userId, username, email });
 }

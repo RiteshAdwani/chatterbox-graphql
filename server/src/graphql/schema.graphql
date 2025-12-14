@@ -1,21 +1,51 @@
 type Query {
   hello: String
+  users: [User!]!
+  chats: [Chat!]!
+  chat(id: ID!): Chat
+  messages(chatId: ID!): [Message!]!
 }
 
 type Mutation {
   login(input: LoginInput!): AuthToken!
   signup(input: SignupInput!): AuthToken!
+  logout: Boolean!
+  refresh(refreshToken: String!): AuthToken!
+  createChat(input: CreateChatInput!): Chat!
+  sendMessage(input: SendMessageInput!): Message!
 }
 
 type Subscription {
-  messageSent: Message
+  messageSent(chatId: ID!): Message!
+}
+
+type Chat {
+  id: ID!
+  name: String
+  type: ChatType!
+  participants: [User!]!
+  messages: [Message!]!
+  lastMessage: Message
+  createdAt: String!
+}
+
+enum ChatType {
+  DIRECT
+  GROUP
 }
 
 type Message {
   id: ID!
+  chatId: ID!
   text: String!
-  from: String!
+  from: User!
   createdAt: String!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
 }
 
 input LoginInput {
@@ -27,6 +57,17 @@ input SignupInput {
   username: String!
   password: String!
   email: String!
+}
+
+input CreateChatInput {
+  participantUserIds: [ID!]!
+  name: String
+  type: ChatType!
+}
+
+input SendMessageInput {
+  chatId: ID!
+  text: String!
 }
 
 type AuthToken {

@@ -1,10 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { errorMessages } from '../constants/messages.constants';
+import { getJwtSecret } from './getJwtSecret.js';
 
 export const decodeToken = (token: string) => {
-  const secret = process.env['JWT_SECRET'];
-  if (!secret) {
-    throw new Error(errorMessages.missingEnvVar('JWT_SECRET'));
-  }
-  return jwt.verify(token, secret);
+  return jwt.verify(token, getJwtSecret());
 };
