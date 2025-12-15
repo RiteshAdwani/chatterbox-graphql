@@ -1,13 +1,8 @@
-import { Form, Input, Button, message } from "antd";
+import { Form, Input, Button } from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { useMutation } from "@apollo/client/react";
-import {
-  setLocalStorageData,
-} from "../../utils/localStorage";
-import { LOCAL_STORAGE_KEYS } from "../../constants/localStorageKeys";
+import { useLogin } from "../../hooks/auth/useLogin";
 import { ROUTE_PATHS } from "../../config/routes";
-import type { LoginData, LoginInput } from "../../types/auth";
+import type { LoginInput } from "../../types/auth";
 import {
   Container,
   StyledCard,
@@ -18,36 +13,12 @@ import {
   FooterText,
   StyledLink,
 } from "./Login.styles";
-import { LOGIN_MUTATION } from "../../graphql/mutations/login";
 
 export function Login() {
-  const navigate = useNavigate();
-  const [login, { loading }] = useMutation<LoginData, { input: LoginInput }>(
-    LOGIN_MUTATION
-  );
+  const { login, loading } = useLogin();
 
   const onFinish = async (values: LoginInput) => {
-    try {
-      const { data } = await login({
-        variables: { input: values },
-      });
-
-      if (data?.login) {
-        // Store tokens
-        setLocalStorageData(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, data.login.accessToken);
-        setLocalStorageData(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, data.login.refreshToken);
-
-        // Store user data
-        setLocalStorageData(LOCAL_STORAGE_KEYS.USER, data.login.user);
-
-        message.success("Login successful!");
-        navigate(ROUTE_PATHS.HOME);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        message.error(error.message || "Login failed. Please try again.");
-      }
-    }
+    await login(values);
   };
 
   return (

@@ -5,7 +5,6 @@ export interface User {
 }
 
 export interface AuthResponse {
-  user: User;
   accessToken: string;
   refreshToken: string;
 }
@@ -27,4 +26,19 @@ export interface LoginData {
 
 export interface SignupData {
   signup: AuthResponse;
+}
+
+export interface RefreshTokenData {
+  refresh: {
+    accessToken: string;
+    refreshToken: string;
+  };
+}
+
+export interface RefreshTokenVariables {
+  refreshToken: string;
+}
+
+export interface LogoutData {
+  logout: boolean;
 }

@@ -24,6 +24,17 @@ export const resolvers = {
       return `Hello ${payload.username}, Welcome to ChatterBox!`;
     },
 
+    // Get current authenticated user
+    profile: async (_root: unknown, _args: unknown, context: AuthContext) => {
+      requireAuth(context);
+      const payload = decodeToken(context.token) as { id: number };
+      const user = await dbGetUserById(payload.id);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user;
+    },
+
     // Get all users (for selecting participants when creating a chat)
     users: async (_root: unknown, _args: unknown, context: AuthContext) => {
       requireAuth(context);

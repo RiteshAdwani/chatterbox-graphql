@@ -1,5 +1,6 @@
 type Query {
   hello: String
+  profile: User!
   users: [User!]!
   chats: [Chat!]!
   chat(id: ID!): Chat

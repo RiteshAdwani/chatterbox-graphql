@@ -1,14 +1,8 @@
-import { Form, Input, Button, message } from "antd";
+import { Form, Input, Button } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { useMutation } from "@apollo/client/react";
-import { SIGNUP_MUTATION } from "../../graphql/mutations/signup";
-import {
-  setLocalStorageData,
-} from "../../utils/localStorage";
-import { LOCAL_STORAGE_KEYS } from "../../constants/localStorageKeys";
+import { useSignup } from "../../hooks/auth/useSignup";
 import { ROUTE_PATHS } from "../../config/routes";
-import type { SignupData, SignupInput } from "../../types/auth";
+import type { SignupInput } from "../../types/auth";
 import {
   Container,
   StyledCard,
@@ -21,46 +15,23 @@ import {
 } from "./Signup.styles";
 
 export function Signup() {
-  const navigate = useNavigate();
-  const [signup, { loading }] = useMutation<SignupData, { input: SignupInput }>(
-    SIGNUP_MUTATION
-  );
+  const { signup, loading } = useSignup();
 
   const onFinish = async (
     values: SignupInput & { confirmPassword: string }
   ) => {
-    try {
-      // Remove confirmPassword before sending to API
-      const { confirmPassword, ...signupInput } = values;
-      console.log(confirmPassword);
+    // Remove confirmPassword before sending to API
+    const { confirmPassword, ...signupInput } = values;
+    console.log(confirmPassword);
 
-      const { data } = await signup({
-        variables: { input: signupInput },
-      });
-
-      if (data?.signup) {
-        // Store tokens
-        setLocalStorageData(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, data.signup.accessToken);
-        setLocalStorageData(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, data.signup.refreshToken);
-
-        // Store user data
-        setLocalStorageData(LOCAL_STORAGE_KEYS.USER, data.signup.user);
-
-        message.success("Account created successfully!");
-        navigate(ROUTE_PATHS.HOME);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        message.error(error.message || "Signup failed. Please try again.");
-      }
-    }
+    await signup(signupInput);
   };
 
   return (
     <Container>
       <StyledCard>
         <Header>
-          <Title>ChatterBox</Title>
+          <Title>{import.meta.env.VITE_APP_NAME || 'ChatterBox'}</Title>
           <Subtitle>Create your account</Subtitle>
         </Header>
 
