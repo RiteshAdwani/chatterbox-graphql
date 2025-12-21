@@ -11,7 +11,7 @@ interface PrivateRouteProps {
  * Redirects to login if user is not authenticated
  */
 export function PrivateRoute({ children }: PrivateRouteProps) {
-  const accessToken = getLocalStorageData<string>(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+  const accessToken = getLocalStorageData(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
   
   if (!accessToken) {
     return <Navigate to="/login" replace />;

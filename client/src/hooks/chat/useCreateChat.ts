@@ -25,11 +25,12 @@ export function useCreateChat() {
       const { data } = await createChatMutation({
         variables: { input },
       });
+      console.log(data)
 
       if (data?.createChat) {
         message.success(MESSAGES.CHAT_CREATED);
         // Navigate to the new chat
-        navigate(`/chats/${data.createChat.id}`);
+        navigate(`/${data.createChat.id}`);
         return data.createChat;
       }
     } catch (err) {

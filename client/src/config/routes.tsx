@@ -37,6 +37,12 @@ export const routes: RouteConfig[] = [
     isPrivate: true,
     title: 'ChatterBox',
   },
+  {
+    path: '/:chatId',
+    component: Home,
+    isPrivate: true,
+    title: 'Chat',
+  },
 ];
 
 // Route paths for easy reference

@@ -21,7 +21,7 @@ interface CreateChatModalProps {
 export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
   const { users, loading: loadingUsers } = useUsers();
   const { createChat, loading: creatingChat } = useCreateChat();
-  
+
   const [chatType, setChatType] = useState<ChatType>("DIRECT");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [chatName, setChatName] = useState("");
@@ -49,7 +49,9 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
   };
 
   const handleUserChange = (value: unknown) => {
-    setSelectedUserIds(value as string[]);
+    if (Array.isArray(value)) {
+      setSelectedUserIds(value);
+    }
   };
 
   const userOptions = users.map((user) => ({
@@ -68,9 +70,9 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
       onCancel={handleClose}
       onOk={handleCreateChat}
       okText="Create Chat"
-      okButtonProps={{ 
+      okButtonProps={{
         disabled: !isValid || creatingChat,
-        loading: creatingChat 
+        loading: creatingChat,
       }}
       cancelButtonProps={{ disabled: creatingChat }}
       width={500}
@@ -114,7 +116,7 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
 
       <FormSection>
         <Label>
-          Select Participants * 
+          Select Participants *
           {chatType === "DIRECT" ? " (1 user)" : " (at least 1 user)"}
         </Label>
         <StyledSelect
@@ -127,9 +129,7 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
           disabled={creatingChat}
           maxCount={chatType === "DIRECT" ? 1 : undefined}
           filterOption={(input, option) =>
-            (option?.label ?? "")
-              .toLowerCase()
-              .includes(input.toLowerCase())
+            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
           }
         />
         {chatType === "DIRECT" && selectedUserIds.length > 0 && (

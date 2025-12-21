@@ -11,7 +11,7 @@ interface PublicRouteProps {
  * Redirects to home if user is already authenticated
  */
 export function PublicRoute({ children }: PublicRouteProps) {
-  const accessToken = getLocalStorageData<string>(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+  const accessToken = getLocalStorageData(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
   
   if (accessToken) {
     return <Navigate to="/" replace />;
