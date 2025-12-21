@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { PrivateRoute } from './components/PrivateRoute';
-import { PublicRoute } from './components/PublicRoute';
+import { PrivateRoute } from './HOC/PrivateRoute';
+import { PublicRoute } from './HOC/PublicRoute';
 import { routes } from './config/routes';
 
 function App() {

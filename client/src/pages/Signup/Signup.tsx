@@ -21,8 +21,7 @@ export function Signup() {
     values: SignupInput & { confirmPassword: string }
   ) => {
     // Remove confirmPassword before sending to API
-    const { confirmPassword, ...signupInput } = values;
-    console.log(confirmPassword);
+    const { ...signupInput } = values;
 
     await signup(signupInput);
   };
@@ -31,7 +30,7 @@ export function Signup() {
     <Container>
       <StyledCard>
         <Header>
-          <Title>{import.meta.env.VITE_APP_NAME || 'ChatterBox'}</Title>
+          <Title>{import.meta.env.VITE_APP_NAME || "ChatterBox"}</Title>
           <Subtitle>Create your account</Subtitle>
         </Header>
 

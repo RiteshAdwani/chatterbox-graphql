@@ -14,5 +14,13 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     });
   }
 
-  _authMiddleware(req, res, next);
+  // Handle JWT errors gracefully - don't block the request
+  _authMiddleware(req, res, (err) => {
+    if (err) {
+      // Set auth to null so GraphQL resolvers can handle it
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (req as any).auth = undefined;
+    }
+    next();
+  });
 };

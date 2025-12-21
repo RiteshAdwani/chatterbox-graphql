@@ -24,45 +24,66 @@ let pendingRequests: Array<() => void> = [];
 const GRAPHQL_HTTP_URI = import.meta.env.VITE_GRAPHQL_HTTP_URI || 'http://localhost:9000/graphql';
 const GRAPHQL_WS_URI = import.meta.env.VITE_GRAPHQL_WS_URI || 'ws://localhost:9000/graphql';
 
-// Function to refresh the access token
-const refreshAccessToken = async (): Promise<string | null> => {
-  const refreshToken = getLocalStorageData<string>(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
-  
-  if (!refreshToken) {
-    console.error("No refresh token available");
-    return null;
-  }
+// Determine if operation is a refresh token request
+function isRefreshRequest(operation: Operation) {
+  return operation.operationName === 'RefreshToken';
+}
 
+// Auth link to add token to headers
+const authLink = new ApolloLink((operation, forward) => {
+  // Use refresh token for refresh operation, access token for others
+  const token = isRefreshRequest(operation)
+    ? getLocalStorageData<string>(LOCAL_STORAGE_KEYS.REFRESH_TOKEN)
+    : getLocalStorageData<string>(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+    
+  if (token) {
+    operation.setContext({
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+  return forward(operation);
+});
+
+// Declare apolloClient variable that will be assigned after error link is created
+// eslint-disable-next-line prefer-const
+let apolloClient: ApolloClient;
+
+// Function to refresh the access token using Apollo Client
+const refreshAccessToken = async (): Promise<string | null> => {
   try {
-    const response = await fetch(GRAPHQL_HTTP_URI, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const refreshToken = getLocalStorageData<string>(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+    
+    const response = await apolloClient.mutate<{
+      refresh: {
+        accessToken: string;
+        refreshToken: string;
+      };
+    }>({
+      mutation: REFRESH_TOKEN_MUTATION,
+      variables: {
+        refreshToken,
       },
-      body: JSON.stringify({
-        query: REFRESH_TOKEN_MUTATION.loc?.source.body,
-        variables: { refreshToken },
-      }),
     });
 
-    const { data, errors } = await response.json();
+    const accessToken = response.data?.refresh?.accessToken;
+    const newRefreshToken = response.data?.refresh?.refreshToken;
 
-    if (errors || !data?.refresh) {
-      throw new Error("Failed to refresh token");
+    if (!accessToken) {
+      throw new Error("No access token received");
     }
 
     // Store new tokens
-    setLocalStorageData(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, data.refresh.accessToken);
-    setLocalStorageData(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, data.refresh.refreshToken);
+    setLocalStorageData(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    if (newRefreshToken) {
+      setLocalStorageData(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+    }
 
-    console.log("Token refreshed successfully");
-    return data.refresh.accessToken;
-  } catch (err) {
+    return accessToken;
+  } catch (error) {
+    console.warn(error)
     // Clear all tokens on refresh failure
-    console.error("Token refresh failed:", err);
     removeLocalStorageData(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
     removeLocalStorageData(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
-    removeLocalStorageData(LOCAL_STORAGE_KEYS.USER);
     
     // Redirect to login
     window.location.href = "/login";
@@ -80,7 +101,7 @@ const errorLink = onError(({ error, operation, forward }) => {
   if (graphQLErrors && Array.isArray(graphQLErrors)) {
     for (const err of graphQLErrors) {
       console.error(
-        `[GraphQL error]: Message: ${err.message}, Path: ${err.path}`
+        `[GraphQL error]: Message: ${err.message}, Code: ${err.extensions?.code}, Path: ${err.path}`
       );
       
       // Check if the error is due to token expiration or authentication issues
@@ -88,8 +109,11 @@ const errorLink = onError(({ error, operation, forward }) => {
         err.message.includes("jwt expired") ||
         err.message.includes("invalid token") ||
         err.message.includes("not authenticated") ||
-        err.extensions?.code === "UNAUTHENTICATED"
+        err.message.includes("token expired") ||
+        err.extensions?.code === "UNAUTHENTICATED" ||
+        err.extensions?.code === "TOKEN_EXPIRED"
       ) {
+        
         // Don't try to refresh on the refresh mutation itself
         if (operation.operationName === "RefreshToken") {
           return;
@@ -104,7 +128,7 @@ const errorLink = onError(({ error, operation, forward }) => {
                 if (!newAccessToken) {
                   throw new Error("Failed to refresh token");
                 }
-
+                
                 // Update the operation context with new token
                 const oldHeaders = operation.getContext().headers;
                 operation.setContext({
@@ -130,6 +154,7 @@ const errorLink = onError(({ error, operation, forward }) => {
               })
               .catch((refreshError) => {
                 // Clear pending requests on error
+                console.error("❌ Refresh failed, clearing pending requests");
                 pendingRequests = [];
                 isRefreshing = false;
                 observer.error(refreshError);
@@ -233,17 +258,6 @@ const errorLink = onError(({ error, operation, forward }) => {
   }
 });
 
-// Auth link to add token to headers
-const authLink = new ApolloLink((operation, forward) => {
-  const accessToken = getLocalStorageData<string>(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
-  if (accessToken) {
-    operation.setContext({
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-  }
-  return forward(operation);
-});
-
 // HTTP connection to the API (chain error link, auth link, and http link)
 const httpLink = concat(
   errorLink,
@@ -269,8 +283,11 @@ function isSubscription(operation: Operation) {
   );
 }
 
-// Create Apollo Client
-export const apolloClient = new ApolloClient({
+// Create Apollo Client and assign to the declared variable
+apolloClient = new ApolloClient({
   link: split(isSubscription, wsLink, httpLink),
   cache: new InMemoryCache()
 });
+
+// Export the client
+export { apolloClient };

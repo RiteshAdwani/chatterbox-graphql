@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { connection } from '../db/connection.js';
 import { getJwtSecret } from './getJwtSecret.js';
 
-const ACCESS_TOKEN_EXPIRY = process.env['ACCESS_TOKEN_EXPIRY'] || '15m'; // Default: 15 minutes
+const ACCESS_TOKEN_EXPIRY = process.env['ACCESS_TOKEN_EXPIRY'] || '1m'; // Default: 15 minutes
 const REFRESH_TOKEN_EXPIRY = process.env['REFRESH_TOKEN_EXPIRY'] || '7d'; // Default: 7 days
 
 // Extract number of days from expiry string (e.g., "7d" -> 7)
