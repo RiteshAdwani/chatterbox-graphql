@@ -4,3 +4,5 @@ node_modules
 # SQLite database files
 *.sqlite3
 *.db
+
+./dist

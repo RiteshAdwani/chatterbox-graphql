@@ -3,14 +3,14 @@ import { expressMiddleware as apolloMiddleware } from '@as-integrations/express5
 import cors from 'cors';
 import express from 'express';
 import { readFile } from 'node:fs/promises';
-import { resolvers } from './src/graphql/resolvers/index.ts';
-import { authMiddleware } from './src/graphql/middlewares/authMiddleware.ts';
+import { resolvers } from './graphql/resolvers/index';
+import { authMiddleware } from './graphql/middlewares/authMiddleware';
 import { WebSocketServer } from 'ws';
 import { createServer as createHttpServer } from 'node:http';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { useServer as useWsServer } from 'graphql-ws/use/ws';
-import { getHttpContext } from './src/utils/getHttpContext.ts';
-import { getWsContext } from './src/utils/getWsContext.ts';
+import { getHttpContext } from './utils/getHttpContext';
+import { getWsContext } from './utils/getWsContext';
 import dotenv from 'dotenv';
 
 dotenv.config();

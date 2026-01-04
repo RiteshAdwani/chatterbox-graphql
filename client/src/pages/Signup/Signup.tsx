@@ -20,10 +20,11 @@ export function Signup() {
   const onFinish = async (
     values: SignupInput & { confirmPassword: string }
   ) => {
-    // Remove confirmPassword before sending to API
-    const { ...signupInput } = values;
-
-    await signup(signupInput);
+    await signup({
+      username: values.username,
+      email: values.email,
+      password: values.password,
+    });
   };
 
   return (

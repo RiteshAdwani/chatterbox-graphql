@@ -4,10 +4,13 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch . --ext ts,graphql --exec tsx server.ts",
-    "start": "tsx server.ts",
+    "dev": "nodemon --watch . --ext ts,graphql --exec tsx src/server.ts",
+    "start": "concurrently \"tsx src/server.ts\" \"npm run codegen\"",
+    "build": "npm run codegen && tsc --noEmit",
+    "createDb": "tsx src/scripts/createDB.ts",
     "lint": "eslint . --ext .ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "codegen": "graphql-codegen --config codegen.json"
   },
   "keywords": [
     "graphql",
@@ -37,12 +40,17 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@graphql-codegen/cli": "6.1.0",
+    "@graphql-codegen/introspection": "5.0.0",
+    "@graphql-codegen/typescript": "5.0.7",
+    "@graphql-codegen/typescript-resolvers": "5.1.5",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/node": "^24.10.1",
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
     "@typescript-eslint/parser": "^8.46.4",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",

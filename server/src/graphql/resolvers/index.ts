@@ -1,6 +1,6 @@
-import { login } from '../../services/login.js';
-import { signup } from '../../services/signup.js';
-import { logout } from '../../services/logout.js';
+import { login } from '../../services/login';
+import { signup } from '../../services/signup';
+import { logout } from '../../services/logout';
 import { refreshAccessToken } from '../../services/refreshToken.js';
 import { createChat, sendMessage, getChatsByUserId, getChatById, getMessagesByChatId } from '../../services/chat.js';
 import { subscribeToMessages } from '../../services/subscription.js';
@@ -37,8 +37,11 @@ export const resolvers = {
 
     // Get all users (for selecting participants when creating a chat)
     users: async (_root: unknown, _args: unknown, context: AuthContext) => {
-      requireAuth(context);
-      return await dbGetAllUsers();
+  requireAuth(context);
+  const payload = decodeToken(context.token) as { id: number };
+  const allUsers = await dbGetAllUsers();
+  // Filter out the current user
+  return allUsers.filter(user => user.id !== payload.id);
     },
 
     // Get all chats for the authenticated user

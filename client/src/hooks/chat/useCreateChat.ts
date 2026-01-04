@@ -25,7 +25,6 @@ export function useCreateChat() {
       const { data } = await createChatMutation({
         variables: { input },
       });
-      console.log(data)
 
       if (data?.createChat) {
         message.success(MESSAGES.CHAT_CREATED);

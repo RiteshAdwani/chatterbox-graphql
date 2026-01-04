@@ -3,13 +3,22 @@ import { nanoid } from 'nanoid';
 import { type Chat, type Message, ChatType } from '../types.js';
 import { errorMessages } from '../constants/messages.constants.js';
 
-// Get all chats for a specific user
+// Get all chats for a specific user, sorted by last message timestamp
 export async function dbGetChatsByUserId(userId: number): Promise<Chat[]> {
   const chats = await connection('chat')
     .join('chat_participant', 'chat.id', 'chat_participant.chatId')
+    .leftJoin('message as lastMsg', function() {
+      this.on('chat.id', '=', 'lastMsg.chatId')
+        .andOn('lastMsg.createdAt', '=', connection.raw(`(
+          SELECT MAX(createdAt)
+          FROM message
+          WHERE message.chatId = chat.id
+        )`));
+    })
     .where('chat_participant.userId', userId)
     .select('chat.*')
-    .orderBy('chat.createdAt', 'desc');
+    .groupBy('chat.id', 'chat.name', 'chat.type', 'chat.createdAt')
+    .orderByRaw('COALESCE(MAX(lastMsg.createdAt), chat.createdAt) DESC');
 
   return chats;
 }
