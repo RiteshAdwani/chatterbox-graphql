@@ -21,7 +21,6 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["node"],
     "moduleResolution": "bundler"
   },
   "include": ["src/**/*"],
