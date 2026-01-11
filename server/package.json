@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --watch . --ext ts,graphql --exec tsx src/server.ts",
     "start": "concurrently \"tsx src/server.ts\" \"npm run codegen\"",
-    "build": "tsc && mkdir -p dist/data && node dist/scripts/createDB.js",
+    "build": "tsc",
     "createDb": "tsx src/scripts/createDB.ts",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
