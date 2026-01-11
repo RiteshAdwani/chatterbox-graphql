@@ -21,9 +21,7 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["node"],
-    "moduleResolution": "bundler",
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    "moduleResolution": "bundler"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
